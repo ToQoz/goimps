@@ -24,24 +24,37 @@ func cmdUnused(stdout, stderr io.Writer, filename string) int {
 		return 1
 	}
 
+	unused, err := getUnused(filename, nil)
+	if err != nil {
+		fmt.Fprintln(stderr, err.Error())
+		return 1
+	}
+
+	for _, u := range unused {
+		fmt.Fprintln(stdout, u.path)
+	}
+	return 0
+}
+
+func getUnused(filename string, src []byte) ([]imp, error) {
+	if src == nil {
+		f, err := os.Open(filename)
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+
+		d, err := ioutil.ReadAll(f)
+		if err != nil {
+			return nil, err
+		}
+		src = d
+	}
+
 	fset := token.NewFileSet()
-	f, err := os.Open(filename)
-	if err != nil {
-		fmt.Fprintln(stderr, err.Error())
-		return 1
-	}
-	defer f.Close()
-
-	src, err := ioutil.ReadAll(f)
-	if err != nil {
-		fmt.Fprintln(stderr, err.Error())
-		return 1
-	}
-
 	aFile, err := parser.ParseFile(fset, filename, src, parser.Mode(0))
 	if err != nil {
-		fmt.Fprintln(stderr, err.Error())
-		return 1
+		return nil, err
 	}
 
 	unused := []imp{}
@@ -122,9 +135,5 @@ DONE:
 		return true
 	})
 
-	for _, u := range unused {
-		fmt.Fprintln(stdout, u.path)
-	}
-
-	return 0
+	return unused, nil
 }
