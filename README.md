@@ -1,5 +1,9 @@
 # Goimps
 
+## Installation
+
+`go get github.com/ToQoz/goimps`
+
 ## Usage
 
 ```
