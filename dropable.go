@@ -9,21 +9,25 @@ import (
 	"os"
 )
 
-func cmdDropable(stdout, stderr io.Writer, filename string) int {
+func cmdDropable(stdin io.Reader, stdout, stderr io.Writer, filename string) int {
+	var in io.Reader
+
 	if filename == "" {
-		fmt.Fprintln(stderr, "unused requires filename")
-		return 1
+		filename = "<standard input>"
+		in = stdin
+	} else {
+		f, err := os.Open(filename)
+		if err != nil {
+			fmt.Fprintln(stderr, err.Error())
+			return 1
+		}
+		defer f.Close()
+		in = f
 	}
 
 	fset := token.NewFileSet()
-	f, err := os.Open(filename)
-	if err != nil {
-		fmt.Fprintln(stderr, err.Error())
-		return 1
-	}
-	defer f.Close()
 
-	src, err := ioutil.ReadAll(f)
+	src, err := ioutil.ReadAll(in)
 	if err != nil {
 		fmt.Fprintln(stderr, err.Error())
 		return 1

@@ -46,7 +46,7 @@ func main() {
 	case "importable":
 		exitCode = cmdImportable(os.Stdout, os.Stderr)
 	case "dropable":
-		exitCode = cmdDropable(os.Stdout, os.Stderr, flag.Arg(1))
+		exitCode = cmdDropable(os.Stdin, os.Stdout, os.Stderr, flag.Arg(1))
 	case "unused":
 		exitCode = cmdUnused(os.Stdin, os.Stdout, os.Stderr, flag.Arg(1))
 	case "fmt":
