@@ -15,7 +15,7 @@ func TestCmdUnused(t *testing.T) {
 	}
 	defer f.Close()
 
-	_, err = f.Write([]byte(`package a
+	code := `package a
 
 import (
 	f "fmt"
@@ -28,7 +28,9 @@ import (
 
 func foo() {
 	f.Println("a")
-}`))
+}`
+
+	_, err = f.Write([]byte(code))
 	if err != nil {
 		panic(err)
 	}
@@ -41,15 +43,44 @@ func foo() {
 		"os",
 	}
 
+	// Input from file
 	buf := []byte{}
 	w := bytes.NewBuffer(buf)
-	if cmdUnused(w, os.Stderr, f.Name()) != 0 {
+
+	if cmdUnused(nil, w, os.Stderr, f.Name()) != 0 {
 		panic("error in cmdUnused.")
 	}
 
 	unused := strings.Split(strings.Trim(w.String(), "\n"), "\n")
 
 	errFound := false
+	for _, e := range expected {
+		if !contains(unused, e) {
+			errFound = true
+			t.Errorf("expected %s is listed, but isn't listed", e)
+		}
+	}
+
+	if len(expected) != len(unused) {
+		errFound = true
+		t.Errorf("expected unused count is %d, but got %d", len(expected), len(unused))
+	}
+
+	if errFound {
+		t.Logf("--- diff <unused> <expected> ---\n%s", getArrayDiff(unused, expected))
+	}
+
+	// Input from stdin
+	buf = []byte{}
+	w = bytes.NewBuffer(buf)
+	r := bytes.NewReader([]byte(code))
+	if cmdUnused(r, w, os.Stderr, "") != 0 {
+		panic("error in cmdUnused.")
+	}
+
+	unused = strings.Split(strings.Trim(w.String(), "\n"), "\n")
+
+	errFound = false
 	for _, e := range expected {
 		if !contains(unused, e) {
 			errFound = true

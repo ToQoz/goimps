@@ -18,13 +18,29 @@ type imp struct {
 	path string
 }
 
-func cmdUnused(stdout, stderr io.Writer, filename string) int {
+func cmdUnused(stdin io.Reader, stdout, stderr io.Writer, filename string) int {
+	var in io.Reader
+
 	if filename == "" {
-		fmt.Fprintln(stderr, "unused requires filename")
-		return 1
+		filename = "<standard input>"
+		in = stdin
+	} else {
+		f, err := os.Open(filename)
+		if err != nil {
+			fmt.Fprintln(stderr, err.Error())
+			return 1
+		}
+		defer f.Close()
+
+		in = f
 	}
 
-	unused, err := getUnused(filename, nil)
+	src, err := ioutil.ReadAll(in)
+	if err != nil {
+		fmt.Fprintln(stderr, err.Error())
+	}
+
+	unused, err := getUnused(filename, src)
 	if err != nil {
 		fmt.Fprintln(stderr, err.Error())
 		return 1
@@ -37,20 +53,6 @@ func cmdUnused(stdout, stderr io.Writer, filename string) int {
 }
 
 func getUnused(filename string, src []byte) ([]imp, error) {
-	if src == nil {
-		f, err := os.Open(filename)
-		if err != nil {
-			return nil, err
-		}
-		defer f.Close()
-
-		d, err := ioutil.ReadAll(f)
-		if err != nil {
-			return nil, err
-		}
-		src = d
-	}
-
 	fset := token.NewFileSet()
 	aFile, err := parser.ParseFile(fset, filename, src, parser.Mode(0))
 	if err != nil {
