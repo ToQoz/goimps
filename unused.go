@@ -38,6 +38,7 @@ func cmdUnused(stdin io.Reader, stdout, stderr io.Writer, filename string) int {
 	src, err := ioutil.ReadAll(in)
 	if err != nil {
 		fmt.Fprintln(stderr, err.Error())
+		return 1
 	}
 
 	unused, err := getUnused(filename, src)
