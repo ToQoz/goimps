@@ -260,9 +260,8 @@ func TestCmdImportable(t *testing.T) {
 
 	build.Default.GOPATH = "./testdata/testgopath"
 
-	buf := []byte{}
-	w := bytes.NewBuffer(buf)
-	if cmdImportable(w, os.Stderr) != 0 {
+	var w bytes.Buffer
+	if cmdImportable(&w, os.Stderr) != 0 {
 		panic("error in cmdImportable")
 	}
 

@@ -44,9 +44,8 @@ func foo() {
 		panic(err)
 	}
 
-	buf := []byte{}
-	w := bytes.NewBuffer(buf)
-	if cmdDropable(nil, w, os.Stderr, f.Name()) != 0 {
+	w := bytes.Buffer{}
+	if cmdDropable(nil, &w, os.Stderr, f.Name()) != 0 {
 		panic("error in cmdDropable.")
 	}
 
@@ -70,9 +69,8 @@ func foo() {
 	}
 
 	// Input from stdout
-	buf = []byte{}
-	w = bytes.NewBuffer(buf)
-	if cmdDropable(bytes.NewReader([]byte(code)), w, os.Stderr, "") != 0 {
+	w.Reset()
+	if cmdDropable(bytes.NewReader([]byte(code)), &w, os.Stderr, "") != 0 {
 		panic("error in cmdDropable.")
 	}
 

@@ -17,11 +17,6 @@ func TestCmdFmt(t *testing.T) {
 		return tsMatcher.ReplaceAllString(a, "")
 	}
 
-	newbuf := func() *bytes.Buffer {
-		b := []byte{}
-		return bytes.NewBuffer(b)
-	}
-
 	code := []byte(`package    main
 	func main() {
 		}
@@ -53,14 +48,15 @@ func TestCmdFmt(t *testing.T) {
 	for _, test := range tests {
 		// gofmt
 		gofmt := exec.Command("gofmt", test.options...)
-		gofmt.Stdout = newbuf()
-		gofmt.Stderr = newbuf()
-		w, err := gofmt.StdinPipe()
-		if err != nil {
+		gofmt.Stdout = &bytes.Buffer{}
+		gofmt.Stderr = &bytes.Buffer{}
+		if p, err := gofmt.StdinPipe(); err == nil {
+			p.Write(test.code)
+			p.Close()
+		} else {
 			t.Fatal(err.Error())
 		}
-		w.Write(test.code)
-		w.Close()
+
 		if err := gofmt.Run(); err != nil {
 			t.Log(gofmt.Stderr.(*bytes.Buffer).String())
 			t.Fatal(err.Error())
@@ -68,8 +64,8 @@ func TestCmdFmt(t *testing.T) {
 
 		// goimps fmt
 		stdin := bytes.NewReader(test.code)
-		stdout := newbuf()
-		stderr := newbuf()
+		stdout := &bytes.Buffer{}
+		stderr := &bytes.Buffer{}
 		cmdFmt(stdin, stdout, stderr, test.options)
 
 		// compare stdout
@@ -197,12 +193,13 @@ func main() {
 }
 `,
 		},
+		// ------------------------------------
 	}
 
 	for _, dtest := range dropTests {
 		stdin := bytes.NewReader([]byte(dtest.in))
-		stdout := newbuf()
-		stderr := newbuf()
+		stdout := &bytes.Buffer{}
+		stderr := &bytes.Buffer{}
 		cmdFmt(stdin, stdout, stderr, []string{})
 
 		got := stdout.String()

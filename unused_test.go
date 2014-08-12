@@ -44,10 +44,9 @@ func foo() {
 	}
 
 	// Input from file
-	buf := []byte{}
-	w := bytes.NewBuffer(buf)
+	var w bytes.Buffer
 
-	if cmdUnused(nil, w, os.Stderr, f.Name()) != 0 {
+	if cmdUnused(nil, &w, os.Stderr, f.Name()) != 0 {
 		panic("error in cmdUnused.")
 	}
 
@@ -71,10 +70,9 @@ func foo() {
 	}
 
 	// Input from stdin
-	buf = []byte{}
-	w = bytes.NewBuffer(buf)
+	w.Reset()
 	r := bytes.NewReader([]byte(code))
-	if cmdUnused(r, w, os.Stderr, "") != 0 {
+	if cmdUnused(r, &w, os.Stderr, "") != 0 {
 		panic("error in cmdUnused.")
 	}
 
