@@ -128,27 +128,27 @@ func doFmtFile(filename string, stdin io.Reader, stdout io.Writer) error {
 	}
 
 	if *autodrop {
-	// Drop unused imports
-	unused, err := getUnused(filename, src)
-	if err != nil {
-		return err
-	}
-
-	ast.SortImports(fset, f)
-	for i, decl := range f.Decls {
-		gen, ok := decl.(*ast.GenDecl)
-		if !ok || gen.Tok != token.IMPORT {
-			continue
+		// Drop unused imports
+		unused, err := getUnused(filename, src)
+		if err != nil {
+			return err
 		}
 
-		for _, u := range unused {
-			deleteImportSpec(fset, gen, u.path)
-		}
+		ast.SortImports(fset, f)
+		for i, decl := range f.Decls {
+			gen, ok := decl.(*ast.GenDecl)
+			if !ok || gen.Tok != token.IMPORT {
+				continue
+			}
 
-		if len(gen.Specs) == 0 {
-			f.Decls = append(f.Decls[:i], f.Decls[i+1:]...)
+			for _, u := range unused {
+				deleteImportSpec(fset, gen, u.path)
+			}
+
+			if len(gen.Specs) == 0 {
+				f.Decls = append(f.Decls[:i], f.Decls[i+1:]...)
+			}
 		}
-	}
 	}
 
 	// Print file
