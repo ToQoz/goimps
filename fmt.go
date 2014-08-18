@@ -25,6 +25,7 @@ var (
 	comments  = fmtFlag.Bool("comments", true, "print comments")
 	useTab    = fmtFlag.Bool("tabs", true, "indent with tabs")
 	tabWidth  = fmtFlag.Int("tabwidth", 8, "tab width")
+	autodrop  = fmtFlag.Bool("D", true, "Automatically drop unused imports")
 )
 
 func cmdFmt(stdin io.Reader, stdout, stderr io.Writer, args []string) int {
@@ -126,6 +127,7 @@ func doFmtFile(filename string, stdin io.Reader, stdout io.Writer) error {
 		return err
 	}
 
+	if *autodrop {
 	// Drop unused imports
 	unused, err := getUnused(filename, src)
 	if err != nil {
@@ -146,6 +148,7 @@ func doFmtFile(filename string, stdin io.Reader, stdout io.Writer) error {
 		if len(gen.Specs) == 0 {
 			f.Decls = append(f.Decls[:i], f.Decls[i+1:]...)
 		}
+	}
 	}
 
 	// Print file
