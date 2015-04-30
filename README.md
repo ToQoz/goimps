@@ -1,5 +1,7 @@
 # Goimps
 
+[![Build Status](https://travis-ci.org/ToQoz/goimps.svg?branch=master)](https://travis-ci.org/ToQoz/goimps)
+
 ## Installation
 
 `go get github.com/ToQoz/goimps`
