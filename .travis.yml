@@ -7,3 +7,4 @@ go:
   - tip
 script:
   - go test -v
+sudo: false
