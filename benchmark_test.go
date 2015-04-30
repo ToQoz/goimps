@@ -2,7 +2,6 @@ package main
 
 import (
 	"go/build"
-	"path/filepath"
 	"strconv"
 	"testing"
 )
@@ -22,7 +21,7 @@ func BenchmarkGetPackageName_by_buildImport(b *testing.B) {
 func BenchmarkGetPackageNameFromGoFiles(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		for _, p := range someStdpkgs {
-			getPackageNameFromGoFiles(filepath.Join(build.Default.GOROOT, "src", "pkg", p))
+			getPackageNameFromGoFiles(p)
 		}
 	}
 }

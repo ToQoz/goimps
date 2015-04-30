@@ -5,6 +5,7 @@ import (
 	"go/build"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -79,8 +80,7 @@ func TestGetPackageNameFromGoFiles(t *testing.T) {
 	var err error
 	var got string
 	var expected string
-
-	got, err = getPackageNameFromGoFiles(filepath.Join(build.Default.GOROOT, "src", "pkg", "net", "http"))
+	got, err = getPackageNameFromGoFiles(stdPkgPath("net/http"))
 	expected = "http"
 	if err != nil {
 		panic(err)
@@ -89,7 +89,7 @@ func TestGetPackageNameFromGoFiles(t *testing.T) {
 		t.Errorf("expected pakcage name is %s, but got %s", expected, got)
 	}
 
-	got, err = getPackageNameFromGoFiles(filepath.Join(build.Default.GOROOT, "src", "pkg", "net"))
+	got, err = getPackageNameFromGoFiles(stdPkgPath("net"))
 	expected = "net"
 	if err != nil {
 		panic(err)
@@ -98,7 +98,7 @@ func TestGetPackageNameFromGoFiles(t *testing.T) {
 		t.Errorf("expected pakcage name is %s, but got %s", expected, got)
 	}
 
-	got, err = getPackageNameFromGoFiles(filepath.Join(build.Default.GOROOT, "src", "pkg", "strings"))
+	got, err = getPackageNameFromGoFiles(stdPkgPath("strings"))
 	expected = "strings"
 	if err != nil {
 		panic(err)
@@ -284,4 +284,18 @@ func TestCmdImportable(t *testing.T) {
 	if errFound {
 		t.Logf("--- diff <importable> <expected> ---\n%s", getArrayDiff(importable, expected))
 	}
+}
+
+func stdPkgPath(name string) string {
+	name = filepath.Join(strings.Split(name, "/")...)
+	if isGo14OrLater() {
+		return filepath.Join(build.Default.GOROOT, "src", name)
+	}
+	return filepath.Join(build.Default.GOROOT, "src", "pkg", name)
+}
+
+func isGo14OrLater() bool {
+	vs := strings.TrimPrefix(runtime.Version(), "go")
+	vs = strings.Replace(vs, ".", "", -1)
+	return vs[:2] >= "14"
 }
